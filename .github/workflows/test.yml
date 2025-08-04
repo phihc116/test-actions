@@ -22,12 +22,12 @@ jobs:
         with: 
             columnsPerRow: 2
             cardItems: |
-                **Repo**\n[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
-                **Event**\n{{GITHUB_EVENT_NAME}}
-                **Actor**\n{{GITHUB_ACTOR}} 
-                **Ref**\n[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
-                **Job**\n[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
-                **Release**\n[{{RELEASE_TAG}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/releases/tag/{{RELEASE_TAG}})
+                **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
+                **Event**<br>{{GITHUB_EVENT_NAME}}
+                **Actor**<br>{{GITHUB_ACTOR}} 
+                **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
+                **Job**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
+                **Release**<br>[{{RELEASE_TAG}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/releases/tag/{{RELEASE_TAG}})
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_MESSAGE_TITLE: "test"
