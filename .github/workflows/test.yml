@@ -16,3 +16,6 @@ jobs:
                 **Repo**\n[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
                 **Event**\n{{GITHUB_EVENT_NAME}}
                 **Actor**\n{{GITHUB_ACTOR}} 
+        env:
+          LARK_WEBHOOK: ${{ envs.LARK_WEBHOOK }}
+
