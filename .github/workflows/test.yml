@@ -17,6 +17,8 @@ jobs:
                 **Event**\n{{GITHUB_EVENT_NAME}}
                 **Actor**\n{{GITHUB_ACTOR}} 
         env:
-          LARK_WEBHOOK: ${{ env.LARK_WEBHOOK }}
-
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_MESSAGE_TITLE: "test"
+          LARK_MESSAGE_SUBTITLE: |
+            Status: test 
 
