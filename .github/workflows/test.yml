@@ -16,6 +16,7 @@ jobs:
                 **Repo**\n[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
                 **Event**\n{{GITHUB_EVENT_NAME}}
                 **Actor**\n{{GITHUB_ACTOR}} 
+                **Ref**\n[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_MESSAGE_TITLE: "test"
