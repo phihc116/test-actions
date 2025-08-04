@@ -17,8 +17,8 @@ jobs:
                 **Event**\n{{GITHUB_EVENT_NAME}}
                 **Actor**\n{{GITHUB_ACTOR}} 
                 **Ref**\n[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
-                **Job**\n[{{GITHUB_RUN_ID}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/actions/runs/{{GITHUB_JOB}}/job/{{GITHUB_RUN_ID}})
-                **Release**\n[{{}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/releases/tag/{{RELEASE_TAG}})
+                **Job**\n[{{GITHUB_RUN_ID}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/actions/runs/{{GITHUB_RUN_ID}})
+                **Release**\n[{{RELEASE_TAG}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/releases/tag/{{RELEASE_TAG}})
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_MESSAGE_TITLE: "test"
