@@ -1,0 +1,18 @@
+on:
+  workflow_dispatch: 
+
+jobs:
+  test-lark:
+    name: test lark noti
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Hello world action step
+        id: hello
+        uses: phuoc-le/action-lark-notify@feature/add-extra-columns
+        with: 
+            columnsPerRow: 2
+            cardItems: |
+                **Repo**\n[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
+                **Event**\n{{GITHUB_EVENT_NAME}}
+                **Actor**\n{{GITHUB_ACTOR}} 
