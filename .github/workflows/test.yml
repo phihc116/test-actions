@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Hello world action step
         id: hello
-        uses: phuoc-le/action-lark-notify@5d82d52da6113f3a5c0958a70764463cc8b75d22
+        uses: phuoc-le/action-lark-notify@feature/add-extra-columns
         with: 
             columnsPerRow: 2
             cardItems: |
@@ -22,4 +22,5 @@ jobs:
           LARK_MESSAGE_TITLE: "test"
           LARK_MESSAGE_SUBTITLE: |
             Status: test 
+
 
