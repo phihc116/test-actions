@@ -12,6 +12,7 @@ jobs:
         uses: phuoc-le/action-lark-notify@feature/add-extra-columns
         with: 
             columnsPerRow: 2
+            token: ${{ secrets.GITHUB_TOKEN }}
             cardItems: |
                 **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
                 **Event**<br>{{GITHUB_EVENT_NAME}}
@@ -25,4 +26,5 @@ jobs:
           LARK_MESSAGE_SUBTITLE: |
             Status: test 
           RELEASE_TAG: v1.0.0
+
 
