@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Hello world action step
         id: hello
-        uses: phuoc-le/action-lark-notify@feature/add-extra-columns
+        uses: phuoc-le/action-lark-notify@5d82d52da6113f3a5c0958a70764463cc8b75d22
         with: 
             columnsPerRow: 2
             cardItems: |
