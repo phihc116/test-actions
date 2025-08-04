@@ -11,11 +11,10 @@ jobs:
         id: get-job-id
         uses: qoomon/actions--context@v4
 
-      - name: Export GITHUB_JOB_ID to env
-        run: |
-          echo "GITHUB_JOB_ID=${GITHUB_JOB_ID}" >> $GITHUB_ENV
+      - name: Export GITHUB_JOB_URL to env
+        run: echo "GITHUB_JOB_URL=${GITHUB_JOB_URL}" >> $GITHUB_ENV
         env:
-          GITHUB_JOB_ID: ${{ steps.get-job-id.outputs.job-id }}
+          GITHUB_JOB_URL: ${{ env.GITHUB_JOB_URL }}
 
       - name: Hello world action step
         id: hello
@@ -27,7 +26,7 @@ jobs:
                 **Event**\n{{GITHUB_EVENT_NAME}}
                 **Actor**\n{{GITHUB_ACTOR}} 
                 **Ref**\n[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
-                **Job**\n[{{GITHUB_JOB_ID}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/actions/runs/{{GITHUB_RUN_ID}}/job/{{GITHUB_JOB_ID}})
+                **Job**\n[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
                 **Release**\n[{{RELEASE_TAG}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/releases/tag/{{RELEASE_TAG}})
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
@@ -35,4 +34,4 @@ jobs:
           LARK_MESSAGE_SUBTITLE: |
             Status: test 
           RELEASE_TAG: v1.0.0
-          GITHUB_JOB_ID: ${{ env.GITHUB_JOB_ID }}
+          GITHUB_JOB_URL: ${{ env.GITHUB_JOB_URL }}
