@@ -7,26 +7,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2.2.2
+        with:
+          tag_name: v1.0.0  # hoặc bạn có thể dùng biến
+          name: Release v1.0.0
+          body: |
+            This is a test release
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Hello world action step
         id: hello
         uses: phuoc-le/action-lark-notify@feature/add-extra-columns
         with: 
-            columnsPerRow: 2
-            token: ${{ secrets.GITHUB_TOKEN }}
-            cardItems: |
-                **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
-                **Event**<br>{{GITHUB_EVENT_NAME}}
-                **Actor**<br>{{GITHUB_ACTOR}} 
-                **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
-                **Job**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
-                **Release**<br>[{{RELEASE_TAG}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/releases/tag/{{RELEASE_TAG}})
-                **Deployment URL**<br>[{{GITHUB_DEPLOYMENT_URL}}]({{GITHUB_DEPLOYMENT_URL}})
+          columnsPerRow: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+          cardItems: |
+            **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
+            **Event**<br>{{GITHUB_EVENT_NAME}}
+            **Actor**<br>{{GITHUB_ACTOR}} 
+            **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
+            **Job**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
+            **Release**<br>[{{RELEASE_TAG}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/releases/tag/{{RELEASE_TAG}})
+            **Deployment URL**<br>[{{GITHUB_DEPLOYMENT_URL}}]({{GITHUB_DEPLOYMENT_URL}})
+            **Release URL**: {{GITHUB_RELEASE_URL}}
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_MESSAGE_TITLE: "test"
           LARK_MESSAGE_SUBTITLE: |
             Status: test 
           RELEASE_TAG: v1.0.0
-
-
-
