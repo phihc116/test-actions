@@ -20,11 +20,13 @@ jobs:
                 **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
                 **Job**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
                 **Release**<br>[{{RELEASE_TAG}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/releases/tag/{{RELEASE_TAG}})
+                **Deployment URL**<br>[{{GITHUB_DEPLOYMENT_URL}}]({{GITHUB_DEPLOYMENT_URL}})
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_MESSAGE_TITLE: "test"
           LARK_MESSAGE_SUBTITLE: |
             Status: test 
           RELEASE_TAG: v1.0.0
+
 
 
