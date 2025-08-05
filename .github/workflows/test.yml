@@ -41,10 +41,8 @@ jobs:
             **Event**<br>{{GITHUB_EVENT_NAME}}
             **Actor**<br>{{GITHUB_ACTOR}} 
             **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
-            **Job**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
-            **Release**<br>[{{RELEASE_TAG}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/releases/tag/{{RELEASE_TAG}})
-            **Deployment URL**<br>[{{GITHUB_DEPLOYMENT_URL}}]({{GITHUB_DEPLOYMENT_URL}})
-            **Release URL**: {{GITHUB_RELEASE_URL}}
+            **Build logs**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
+            **Release page URL**: {{GITHUB_RELEASE_URL}}
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_MESSAGE_TITLE: "test"
