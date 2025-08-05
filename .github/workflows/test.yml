@@ -1,6 +1,9 @@
 on:
   workflow_dispatch:
-
+  
+permissions:
+  contents: write
+  
 jobs:
   test-lark:
     name: test lark noti
@@ -51,4 +54,5 @@ jobs:
           LARK_MESSAGE_SUBTITLE: |
             Status: test 
           RELEASE_TAG: v1.0.0
+
 
