@@ -1,10 +1,12 @@
 name: "Auto ACR build push"
-run-name: "Build tag [${{ github.ref_name }}]"
+run-name: "Build tag [${{ github.event.inputs.tag }}]"
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name to build and release (e.g., v1.0.0)'
+        required: true
 
 permissions:
   contents: write
@@ -18,19 +20,36 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Set up Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create tag if not exists
+        run: |
+          TAG_NAME="${{ github.event.inputs.tag }}"
+          EXISTING_TAG=$(git tag -l "$TAG_NAME")
+          if [ -z "$EXISTING_TAG" ]; then
+            echo "Creating tag: $TAG_NAME"
+            git tag "$TAG_NAME"
+            git push origin "$TAG_NAME"
+          else
+            echo "Tag $TAG_NAME already exists. Skipping creation."
+          fi
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2.2.2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.event.inputs.tag }}
+          name: Release ${{ github.event.inputs.tag }}
           body: |
-            This is an automated release for tag ${{ github.ref_name }}
+            This is an automated release for tag ${{ github.event.inputs.tag }}
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Hello world action step
+      - name: Notify to Lark
         id: hello
         uses: phuoc-le/action-lark-notify@feature/add-extra-columns
         with: 
@@ -48,5 +67,4 @@ jobs:
           LARK_MESSAGE_TITLE: "test"
           LARK_MESSAGE_SUBTITLE: |
             Status: test 
-          RELEASE_TAG: ${{ github.ref_name }}
-
+          RELEASE_TAG: ${{ github.event.inputs.tag }}
