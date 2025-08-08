@@ -61,10 +61,11 @@ jobs:
             **Actor**<br>{{GITHUB_ACTOR}} 
             **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
             **Build logs**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
-            **Release page URL**: [{{GITHUB_RELEASE_TAG_NAME}}]({{GITHUB_RELEASE_URL_BY_BRANCH}})
+            **Release**<br>[{{GITHUB_RELEASE_TAG_NAME}}]({{GITHUB_RELEASE_URL_BY_BRANCH}})
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_MESSAGE_TITLE: "test"
           LARK_MESSAGE_SUBTITLE: |
             Status: test 
           RELEASE_TAG: ${{ github.event.inputs.tag }}
+
