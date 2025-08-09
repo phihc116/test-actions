@@ -15,9 +15,12 @@ jobs:
   create_release:
     name: Create tag & GitHub Release
     runs-on: ubuntu-latest
+    outputs:
+      release_url: ${{ steps.gh_release.outputs.url }}
+      release_id: ${{ steps.gh_release.outputs.id }}
+      upload_url: ${{ steps.gh_release.outputs.upload_url }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Git identity
         run: |
@@ -37,7 +40,8 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2.2.2
+        id: gh_release
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag }}
           name: Release ${{ github.event.inputs.tag }}
@@ -51,30 +55,26 @@ jobs:
   lark_notify:
     name: Notify to Lark
     runs-on: ubuntu-latest
+    needs: create_release   # <-- bắt buộc đợi job tạo release xong
     steps:
-      - name: Checkout repo (optional)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Notify to Lark
         id: hello
         uses: phuoc-le/action-lark-notify@refactor/hcphi-refactor-code
-        with: 
+        with:
           columnsPerRow: 2
           token: ${{ secrets.GITHUB_TOKEN }}
           cardItems: |
             **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
             **Event**<br>{{GITHUB_EVENT_NAME}}
-            **Actor**<br>{{GITHUB_ACTOR}} 
+            **Actor**<br>{{GITHUB_ACTOR}}
             **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
             **Build logs**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
-            **Release (input)**<br>{{ env.GITHUB_RELEASE_URL_BY_BRANCH }}
+            **Release**<br>{{GITHUB_RELEASE_URL_BY_BRANCH}}
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_MESSAGE_TITLE: "test"
           LARK_MESSAGE_SUBTITLE: |
             Status: test
           RELEASE_TAG: ${{ github.event.inputs.tag }}
-
-
-
-
