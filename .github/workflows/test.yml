@@ -30,13 +30,8 @@ jobs:
       - name: Create tag if not exists
         run: |
           TAG_NAME="${{ github.event.inputs.tag }}"
-          EXISTING_TAG=$(git tag -l "$TAG_NAME")
-          if [ -z "$EXISTING_TAG" ]; then
-            echo "Creating tag: $TAG_NAME"
             git tag "$TAG_NAME"
             git push origin "$TAG_NAME"
-          else
-            echo "Tag $TAG_NAME already exists. Skipping creation."
           fi
 
       - name: Create GitHub Release
@@ -78,3 +73,4 @@ jobs:
           LARK_MESSAGE_SUBTITLE: |
             Status: test
           RELEASE_TAG: ${{ github.event.inputs.tag }}
+
