@@ -71,7 +71,7 @@ jobs:
 
       - name: Notify to Lark (per job)
         if: always()  
-        uses: phuoc-le/action-lark-notify@refactor/hcphi-refactor-code
+        uses: phuoc-le/action-lark-notify@hcphi/fix-get-logs
         with:
           columnsPerRow: 2
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -91,3 +91,4 @@ jobs:
           LARK_MESSAGE_SUBTITLE: |
             Status: ${{ job.status }}
           RELEASE_URL: ${{ needs.create_release.outputs.release_url }}
+
