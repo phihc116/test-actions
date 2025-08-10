@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Compose & send notify (Lark)
-        uses: phuoc-le/action-lark-notify@refactor/hcphi-refactor-code
+        uses: phuoc-le/action-lark-notify@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           columnsPerRow: 2
