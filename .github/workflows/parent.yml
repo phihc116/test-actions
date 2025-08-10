@@ -1,40 +1,42 @@
 name: parent
-
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: "Tag name (e.g., v1.0.0)"
-        required: true
-
-permissions:
-  contents: read
+        required: false
 
 jobs:
-  parent-a:
-    name: parent-a
+  check_client_payload:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: |
-          echo "parent-a working..."
-          sleep 3
-          echo "parent-a done."
+      - run: echo "[parent] check_client_payload"
 
-  parent-b:
-    name: parent-b
+  check_and_create_ref:
     runs-on: ubuntu-latest
+    needs: check_client_payload
     steps:
-      - uses: actions/checkout@v4
-      - run: |
-          echo "parent-b working..."
-          sleep 2
-          echo "parent-b done."
+      - run: echo "[parent] check_and_create_ref"
 
-  # Gọi child sau khi 2 job trên xong
-  call-child:
-    needs: [parent-a, parent-b]
+  create_gh_release:
+    runs-on: ubuntu-latest
+    needs: check_and_create_ref
+    steps:
+      - run: echo "[parent] create_gh_release tag=${{ inputs.tag }}"
+
+  # Hai nhánh gọi child chạy SONG SONG
+  trigger-android:
+    name: trigger-child-android
+    needs: create_gh_release
     uses: ./.github/workflows/child.yml
     with:
-      tag: ${{ inputs.tag }}
+      channel: android
+    secrets: inherit
+
+  trigger-ios:
+    name: trigger-child-ios
+    needs: create_gh_release
+    uses: ./.github/workflows/child.yml
+    with:
+      channel: ios
     secrets: inherit
