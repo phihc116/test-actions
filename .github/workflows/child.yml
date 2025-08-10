@@ -1,70 +1,43 @@
 name: child
-
 on:
   workflow_call:
     inputs:
-      tag:
-        required: false
+      channel:
         type: string
-    secrets:
-      LARK_WEBHOOK:
-        required: false
-
-permissions:
-  contents: read
-  actions: read  # nếu job notify cần đọc thông tin run/log
+        required: true
 
 jobs:
-  child-a:
-    name: child-a
+  # 2 job song song
+  build-x64:
+    name: build-${{ inputs.channel }}-x64
     runs-on: ubuntu-latest
-    outputs:
-      result: ${{ steps.result.outputs.msg }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Do work A
-        run: |
-          echo "child-a building for tag=${{ inputs.tag }}"
-          sleep 3
-      - id: result
-        run: echo "msg=child-a done" >> "$GITHUB_OUTPUT"
+      - name: step 1
+        run: echo "[child:${{ inputs.channel }}:x64] step 1"
+      - name: step 2
+        run: echo "[child:${{ inputs.channel }}:x64] step 2"
+      - name: step 3
+        run: echo "[child:${{ inputs.channel }}:x64] step 3"
 
-  child-b:
-    name: child-b
+  build-arm64:
+    name: build-${{ inputs.channel }}-arm64
     runs-on: ubuntu-latest
-    outputs:
-      result: ${{ steps.result.outputs.msg }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Do work B
-        run: |
-          echo "child-b testing for tag=${{ inputs.tag }}"
-          sleep 4
-      - id: result
-        run: echo "msg=child-b done" >> "$GITHUB_OUTPUT"
+      - name: step 1
+        run: echo "[child:${{ inputs.channel }}:arm64] step 1"
+      - name: step 2
+        run: echo "[child:${{ inputs.channel }}:arm64] step 2"
+      - name: step 3
+        run: echo "[child:${{ inputs.channel }}:arm64] step 3"
 
-  # Job notify chạy 1 lần, sau khi 2 job con hoàn tất
+  # Notify sau khi 2 job trên xong
   notify:
-    name: notify
-    needs: [child-a, child-b]
+    name: notify-${{ inputs.channel }}
     runs-on: ubuntu-latest
-    if: always()   # luôn gửi dù pass/fail
+    needs: [build-x64, build-arm64]
+    if: always()
     steps:
-      - uses: actions/checkout@v4
-      - name: Compose & send notify (Lark)
-        uses: phuoc-le/action-lark-notify@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          columnsPerRow: 2
-          cardItems: |
-            **Workflow**<br>{{GITHUB_WORKFLOW}}
-            **Run**<br>[#{{GITHUB_RUN_NUMBER}}]({{GITHUB_JOB_URL}})
-            **Status**<br>${{ job.status }}
-            **Tag**<br>${{ inputs.tag }}
-            **child-a**<br>${{ needs.child-a.outputs.result }}
-            **child-b**<br>${{ needs.child-b.outputs.result }}
-        env:
-          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
-          LARK_MESSAGE_TITLE: "Child finished"
-          LARK_MESSAGE_SUBTITLE: |
-            Overall status: ${{ job.status }}
+      - run: |
+          echo "[child:${{ inputs.channel }}] NOTIFY"
+          echo " - build-x64 result: ${{ needs.build-x64.result }}"
+          echo " - build-arm64 result: ${{ needs.build-arm64.result }}"
