@@ -1,0 +1,66 @@
+name: simulate-parallel
+on:
+  workflow_dispatch:
+
+jobs:
+  # ===== Nhánh A: 2 build con chạy song song =====
+  build-a:
+    name: Matrix A - ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [a1, a2]
+    steps:
+      - name: step 1
+        run: |
+          echo "[A:${{ matrix.target }}] step 1"
+          sleep $((RANDOM % 3 + 1))
+      - name: step 2
+        run: |
+          echo "[A:${{ matrix.target }}] step 2"
+          sleep $((RANDOM % 3 + 1))
+      - name: step 3
+        run: |
+          echo "[A:${{ matrix.target }}] step 3"
+          sleep $((RANDOM % 3 + 1))
+
+  notify-a:
+    name: Notify A
+    runs-on: ubuntu-latest
+    needs: build-a   # chờ toàn bộ a1, a2 xong
+    if: always()     # vẫn chạy kể cả có job fail
+    steps:
+      - name: log notify A
+        run: echo "[A] All done -> notify"
+
+  # ===== Nhánh B: 2 build con chạy song song =====
+  build-b:
+    name: Matrix B - ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [b1, b2]
+    steps:
+      - name: step 1
+        run: |
+          echo "[B:${{ matrix.target }}] step 1"
+          sleep $((RANDOM % 3 + 1))
+      - name: step 2
+        run: |
+          echo "[B:${{ matrix.target }}] step 2"
+          sleep $((RANDOM % 3 + 1))
+      - name: step 3
+        run: |
+          echo "[B:${{ matrix.target }}] step 3"
+          sleep $((RANDOM % 3 + 1))
+
+  notify-b:
+    name: Notify B
+    runs-on: ubuntu-latest
+    needs: build-b   # chờ b1, b2 xong
+    if: always()
+    steps:
+      - name: log notify B
+        run: echo "[B] All done -> notify"
