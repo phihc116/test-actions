@@ -10,7 +10,7 @@ on:
 
 permissions:
   contents: write
-  actions: read  # cần quyền đọc Actions API để lấy jobs/steps
+  actions: read  # cần để gọi API lấy danh sách jobs/steps
 
 jobs:
   create_release:
@@ -18,8 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release_url: ${{ steps.gh_release.outputs.url }}
-      release_id: ${{ steps.gh_release.outputs.id }}
-      upload_url: ${{ steps.gh_release.outputs.upload_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,34 +50,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  workers:
-    name: Worker - ${{ matrix.name }}
+  # ===== Fan-out 2 chiều: (worker ∈ {a,b,c}) x (sub ∈ {1,2,3}) -> 9 job chạy song song =====
+  unit:
+    name: Worker - ${{ matrix.worker }} / sub-${{ matrix.sub }}
     runs-on: ubuntu-latest
     needs: create_release
     strategy:
       fail-fast: false
       matrix:
-        name: [job-a, job-b, job-c]
+        worker: [a, b, c]
+        sub: [1, 2, 3]
+
+    env:
+      JOB_DISPLAY_NAME: "Worker - ${{ matrix.worker }} / sub-${{ matrix.sub }}"
+
     steps:
       - uses: actions/checkout@v4
 
-      # --- 3 bước trong mỗi job song song ---
-      - name: job 1 - Build
+      # 3 bước trong mỗi job con; bước cuối mới notify
+      - name: job 1
         run: |
-          echo "[$(date)] building ${{ matrix.name }}..."
-          sleep $((RANDOM % 5 + 3))
+          echo "[$(date)] do job 1 for ${{ matrix.worker }} / sub-${{ matrix.sub }}"
+          sleep $((RANDOM % 3 + 2))
 
-      - name: job 2 - Test
+      - name: job 2
         run: |
-          echo "[$(date)] testing ${{ matrix.name }}..."
-          sleep $((RANDOM % 5 + 3))
+          echo "[$(date)] do job 2 for ${{ matrix.worker }} / sub-${{ matrix.sub }}"
+          sleep $((RANDOM % 3 + 2))
 
-      - name: job 3 - Publish
+      - name: job 3
         run: |
-          echo "[$(date)] publishing ${{ matrix.name }}..."
-          sleep $((RANDOM % 5 + 3))
+          echo "[$(date)] do job 3 for ${{ matrix.worker }} / sub-${{ matrix.sub }}"
+          sleep $((RANDOM % 3 + 2))
 
-      # --- Tính URL log trỏ thẳng tới 'job 1' ---
+      # Tính URL log của CHÍNH job con này, trỏ thẳng vào step "job 1"
       - name: Compute job log URL (to 'job 1')
         id: job_url
         shell: bash
@@ -93,58 +97,45 @@ jobs:
           ATTEMPT="${GITHUB_RUN_ATTEMPT}"
           API="${GITHUB_API_URL:-https://api.github.com}"
 
+          # Lấy danh sách jobs của run attempt hiện tại
           RESP="$(curl -sSfL \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "${API}/repos/${OWNER}/${REPO}/actions/runs/${RUN_ID}/attempts/${ATTEMPT}/jobs?per_page=100")"
 
-          URL="$(jq -r --arg RUNNER_NAME "$RUNNER_NAME" '
-            def ts: ( .completed_at // .started_at // "" );
-            def pick($arr):
-              if ($arr|length)>0 then
-                ( [ .[] | select(.conclusion=="failure") ] | sort_by(ts) | last )
-                // ( [ .[] | select(.status=="in_progress") ] | sort_by(ts) | last )
-                // ( $arr | sort_by(ts) | last )
-              else null end;
-
-            .jobs as $all
-            | ( [ $all[] | select(.runner_name == $RUNNER_NAME) ] ) as $same
-            | ( pick($same) // pick($all) ) as $job
+          # Chọn đúng job theo DISPLAY NAME để tránh lẫn các job song song khác
+          URL="$(jq -r '
+            .jobs
+            | map(select(.name == env.JOB_DISPLAY_NAME))        # job đúng của mình
+            | .[0] as $job
             | if $job == null then empty else
                 ($job.steps // []) as $steps
-                | (
-                    # 1) tìm đúng step tên "job 1"
-                    ( [ range(0; $steps|length)
-                        | select( ($steps[.]|.name//""|ascii_downcase) == "job 1" )
-                      ] | .[0] )
-                    # 2) fallback: bước hợp lệ đầu tiên (bỏ qua auto & Post ...)
-                    // ( [ range(0; $steps|length)
-                          | select( (($steps[.]|.name//"") as $n
-                                    | ($n!="Set up job")
-                                    and ($n!="Complete job")
-                                    and (( $n|ascii_downcase | startswith("post ") )|not)
-                                    )
-                                )
-                      ] | .[0] )
-                  ) as $idx
+                | ( [range(0; $steps|length)
+                     | select( ($steps[.]|.name//""|ascii_downcase) == "job 1" )
+                   ] | .[0] ) as $idx
                 | if $idx == null then $job.html_url
                   else "\($job.html_url)#step:\($idx+1):1"
                   end
               end
           ' <<<"$RESP")"
 
-          echo "job_log_url=$URL" >> "$GITHUB_OUTPUT"
-          echo "Computed job_log_url: $URL"
+          if [ -z "${URL}" ] || [ "${URL}" = "null" ]; then
+            # Fallback: dùng GITHUB_JOB_URL nếu action notify của bạn có sẵn biến này
+            URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
 
-      # --- Push notify cuối cùng của job ---
-      - name: Notify to Lark (per job)
+          echo "job_log_url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "Computed job_log_url: ${URL}"
+
+      # Notify cuối cùng (dù pass/fail đều gửi)
+      - name: Notify to Lark (per sub-job)
         if: always()
-        uses: phuoc-le/action-lark-notify@main
+        uses: phuoc-le/action-lark-notify@hcphi/fix-get-logs
         with:
           columnsPerRow: 2
           token: ${{ secrets.GITHUB_TOKEN }}
           cardItems: |
-            **Job**<br>${{ matrix.name }}
+            **Worker/Sub**<br>${{ matrix.worker }} / sub-${{ matrix.sub }}
             **Status**<br>${{ job.status }}
             **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
             **Event**<br>{{GITHUB_EVENT_NAME}}
@@ -155,8 +146,7 @@ jobs:
             **Release**<br>{{RELEASE_URL}}
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
-          LARK_MESSAGE_TITLE: "${{ matrix.name }} finished"
+          LARK_MESSAGE_TITLE: "Worker ${{ matrix.worker }} / sub-${{ matrix.sub }} finished"
           LARK_MESSAGE_SUBTITLE: |
             Status: ${{ job.status }}
-          RELEASE_URL: ${{ needs.create_release.outputs.release_url }}
-
+          RELEASE_URL: ${{ GITHUB_JOB_URL }}
