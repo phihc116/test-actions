@@ -1,0 +1,40 @@
+name: parent
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name (e.g., v1.0.0)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  parent-a:
+    name: parent-a
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          echo "parent-a working..."
+          sleep 3
+          echo "parent-a done."
+
+  parent-b:
+    name: parent-b
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          echo "parent-b working..."
+          sleep 2
+          echo "parent-b done."
+
+  # Gọi child sau khi 2 job trên xong
+  call-child:
+    needs: [parent-a, parent-b]
+    uses: ./.github/workflows/child.yml
+    with:
+      tag: ${{ inputs.tag }}
+    secrets: inherit
