@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag name to build and release (e.g., v1.0.0)'
+        description: "Tag name to build and release (e.g., v1.0.0)"
         required: true
 
 permissions:
@@ -28,8 +28,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create tag if not exists
+        env:
+          TAG_NAME: ${{ github.event.inputs.tag }}
         run: |
-          TAG_NAME="${{ github.event.inputs.tag }}"
+          if git rev-parse -q --verify "refs/tags/$TAG_NAME" >/dev/null; then
+            echo "Tag $TAG_NAME already exists. Skipping."
+          else
             git tag "$TAG_NAME"
             git push origin "$TAG_NAME"
           fi
@@ -47,30 +51,43 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  lark_notify:
-    name: Notify to Lark
+  workers:
+    name: Worker - ${{ matrix.name }}
     runs-on: ubuntu-latest
-    needs: create_release   # <-- bắt buộc đợi job tạo release xong
+    needs: create_release
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [job-a, job-b, job-c]   
     steps:
       - uses: actions/checkout@v4
 
-      - name: Notify to Lark
-        id: hello
+      - name: Simulate work
+        run: |
+          echo "Running ${{ matrix.name }}..."
+          # Giả lập công việc (5-14 giây)
+          sleep $((RANDOM % 10 + 5))
+          echo "${{ matrix.name }} done."
+
+      - name: Notify to Lark (per job)
+        if: always()  
         uses: phuoc-le/action-lark-notify@refactor/hcphi-refactor-code
         with:
           columnsPerRow: 2
           token: ${{ secrets.GITHUB_TOKEN }}
           cardItems: |
+            **Job**<br>${{ matrix.name }}
+            **Status**<br>${{ job.status }}
             **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
             **Event**<br>{{GITHUB_EVENT_NAME}}
             **Actor**<br>{{GITHUB_ACTOR}}
             **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
-            **Build logs**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
-            **Release**<br>{{GITHUB_RELEASE_URL_BY_BRANCH}}
+            **Run Logs**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
+            **Tag**<br>${{ github.event.inputs.tag }}
+            **Release**<br>{{RELEASE_URL}}
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
-          LARK_MESSAGE_TITLE: "test"
+          LARK_MESSAGE_TITLE: "${{ matrix.name }} finished"
           LARK_MESSAGE_SUBTITLE: |
-            Status: test
-          RELEASE_TAG: ${{ github.event.inputs.tag }}
-
+            Status: ${{ job.status }}
+          RELEASE_URL: ${{ needs.create_release.outputs.release_url }}
