@@ -37,7 +37,31 @@ jobs:
     needs: [build-x64, build-arm64]
     if: always()
     steps:
-      - run: |
-          echo "[child:${{ inputs.channel }}] NOTIFY"
-          echo " - build-x64 result: ${{ needs.build-x64.result }}"
-          echo " - build-arm64 result: ${{ needs.build-arm64.result }}"
+      - name: Decide message color
+        run: |
+          if [[ "${{ needs.build-x64.result }}" == "success" && "${{ needs.build-arm64.result }}" == "success" ]]; then
+            echo "MSG_COLOR=success" >> $GITHUB_ENV
+          else
+            echo "MSG_COLOR=danger" >> $GITHUB_ENV
+          fi
+  
+      - name: Push Notification
+        uses: phuoc-le/action-lark-notify@main
+        with:
+          columnsPerRow: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+          cardItems: |
+            **Workflow**<br>{{GITHUB_WORKFLOW}}
+            **Channel**<br>${{ inputs.channel }}
+            **Run**<br>[#{{GITHUB_RUN_NUMBER}}]({{GITHUB_JOB_URL}})
+            **x64**<br>${{ needs.build-x64.result }}
+            **arm64**<br>${{ needs.build-arm64.result }}
+            **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
+            **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_MESSAGE_TITLE: "Build ${{ inputs.channel }} finished"
+          LARK_MESSAGE_SUBTITLE: |
+            Overall: ${{ job.status }}
+          LARK_MESSAGE_TEMPLATE: ${{ env.MSG_COLOR }}
+
