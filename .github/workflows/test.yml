@@ -138,6 +138,8 @@ jobs:
           scriptInline: |
             const repo = envs.GITHUB_REPOSITORY;
             const base = envs.GITHUB_SERVER_URL || 'https://github.com';
+            console.log(base);
+            console.log(repo);
             const tag  = (github?.event?.inputs?.tag) || 'latest';
             setEnv('RELEASE_URL', `${base}/${repo}/releases/tag/${tag}`);
 
@@ -176,6 +178,7 @@ jobs:
           JOB_JSON:    ${{ toJson(job) }}
           STEPS_JSON:  ${{ toJson(steps) }}
           ENVS_JSON:  ${{ toJson(env) }}
+
 
 
 
