@@ -52,3 +52,9 @@ runs:
         LARK_MESSAGE_TITLE: "Build Browser For MacOS Dev"
         LARK_MESSAGE_SUBTITLE: "Status: ${{ inputs.build_status }}"
         LARK_MESSAGE_TEMPLATE: "${{ inputs.msg_color }}"
+        VARS_JSON:   ${{ toJson(vars) }}
+        GITHUB_JSON: ${{ toJson(github) }}
+        MATRIX_JSON: ${{ toJson(matrix) }}
+        JOB_JSON:    ${{ toJson(job) }}
+        STEPS_JSON:  ${{ toJson(steps) }}
+        ENVS_JSON:  ${{ toJson(env) }}
