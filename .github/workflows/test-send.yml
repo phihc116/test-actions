@@ -3,11 +3,7 @@ run-name: "Build tag [${{ github.event.inputs.tag }}]"
 
 on:
   workflow_dispatch:
-    inputs:
-      tag:
-        description: "Tag name to build and release (e.g., v1.0.0)"
-        required: true
-
+  
 permissions:
   contents: write
   actions: read  # cần để gọi API lấy danh sách jobs/steps
