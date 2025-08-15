@@ -130,7 +130,7 @@ jobs:
       # Notify cuối cùng (dù pass/fail đều gửi)
       - name: Notify to Lark (per sub-job)
         if: always()
-        uses: phuoc-le/action-lark-notify@hcphi/fix-get-logs
+        uses: phuoc-le/action-lark-notify@improve/hcphi-improve-read-mixed-field
         with:
           columnsPerRow: 2
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -150,3 +150,4 @@ jobs:
           LARK_MESSAGE_SUBTITLE: |
             Status: ${{ job.status }}
           RELEASE_URL: ${{ GITHUB_JOB_URL }}
+
