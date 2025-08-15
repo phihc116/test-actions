@@ -134,20 +134,45 @@ jobs:
         with:
           columnsPerRow: 2
           token: ${{ secrets.GITHUB_TOKEN }}
+          # chạy JS trước khi render để set env động
+          scriptInline: |
+            const repo = envs.GITHUB_REPOSITORY;
+            const base = envs.GITHUB_SERVER_URL || 'https://github.com';
+            const tag  = (github?.event?.inputs?.tag) || 'latest';
+            setEnv('RELEASE_URL', `${base}/${repo}/releases/tag/${tag}`);
+      
+            // Nếu bạn muốn đổi title/subtitle từ script:
+            setEnv('LARK_MESSAGE_TITLE', `Worker ${matrix.worker} / sub-${matrix.sub} finished`);
+            setEnv('LARK_MESSAGE_SUBTITLE', `Status: ${job.status}`);
+      
+            // Nếu bạn cần log URL mà chưa có sẵn:
+            setEnv('RUN_LOG_URL', `${base}/${repo}/actions/runs/${envs.GITHUB_RUN_ID}`);
           cardItems: |
-            **Worker/Sub**<br>${{ matrix.worker }} / sub-${{ matrix.sub }}
-            **Status**<br>${{ job.status }}
-            **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
-            **Event**<br>{{GITHUB_EVENT_NAME}}
-            **Actor**<br>{{GITHUB_ACTOR}}
-            **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
-            **Run Logs**<br>[Open logs](${{ steps.job_url.outputs.job_log_url }})
+            **Worker/Sub**<br>{{ matrix.worker }} / sub-{{ matrix.sub }}
+            **Status**<br>{{ job.status }}
+            **Repo**<br>[{{ GITHUB_REPOSITORY }}]({{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }})
+            **Event**<br>{{ GITHUB_EVENT_NAME }}
+            **Actor**<br>{{ GITHUB_ACTOR }}
+            # dùng steps qua engine của mình (cần STEPS_JSON ở env, xem bên dưới)
+            **Run Logs**<br>[Open logs]({{ steps.job_url.outputs.job_log_url || envs.RUN_LOG_URL }})
+            **Ref**<br>[{{ GITHUB_REF }}]({{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }}/tree/{{ GITHUB_REF_NAME }})
             **Tag**<br>${{ github.event.inputs.tag }}
-            **Release**<br>{{RELEASE_URL}}
+            **Release**<br>{{ RELEASE_URL }}
+      	  **TEST nà**<br> {{ envs.GITHUB_REPOSITORY}}
         env:
+          # webhook theo cách bạn đang dùng
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          # Bạn vẫn có thể set title/subtitle tĩnh ở đây (scriptInline có thể override)
           LARK_MESSAGE_TITLE: "Worker ${{ matrix.worker }} / sub-${{ matrix.sub }} finished"
           LARK_MESSAGE_SUBTITLE: |
-            Status: ${{ job.status }} 
+            Status: ${{ job.status }}
+      
+          # TRUYỀN ĐỦ CONTEXT DƯỚI DẠNG JSON CHO ENGINE:
+          VARS_JSON:   ${{ toJson(vars) }}
+          GITHUB_JSON: ${{ toJson(github) }}
+          MATRIX_JSON: ${{ toJson(matrix) }}
+          JOB_JSON:    ${{ toJson(job) }}
+          STEPS_JSON:  ${{ toJson(steps) }}
+      	ENVS_JSON:  ${{ toJson(envs) }}
 
 
