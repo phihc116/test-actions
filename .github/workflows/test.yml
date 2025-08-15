@@ -130,7 +130,7 @@ jobs:
       # Notify cuối cùng (dù pass/fail đều gửi)
       - name: Notify to Lark (per sub-job)
         if: always()
-        uses: phuoc-le/action-lark-notify@test-v2
+        uses: phuoc-le/action-lark-notify@main
         with:
           columnsPerRow: 2
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -163,6 +163,7 @@ jobs:
             **Tag**<br>${{ github.event.inputs.tag }}
             **Release**<br>{{ envs.GITHUB_REPOSITORY }} {{RELEASE_URL}}
             **GITHUB_REPOSITORY**<br>{{ envs.GITHUB_REPOSITORY }} 
+            **Hello**{{GITHUB_TAG_VERSION}}
         env:
           # webhook theo cách bạn đang dùng
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
@@ -178,6 +179,7 @@ jobs:
           JOB_JSON:    ${{ toJson(job) }}
           STEPS_JSON:  ${{ toJson(steps) }}
           ENVS_JSON:  ${{ toJson(env) }}
+
 
 
 
