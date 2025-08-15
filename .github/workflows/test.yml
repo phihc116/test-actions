@@ -152,7 +152,7 @@ jobs:
           cardItems: |
             **Worker/Sub**<br>{{ matrix.worker }} / sub-{{ matrix.sub }}
             **Status**<br>{{ job.status }}
-            **Repo**<br>[{{ GITHUB_REPOSITORY }}]({{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }})
+            **Repo**<br>[{{ TESTNE || GITHUB_REPOSITORY }}]({{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }})
             **Event**<br>{{ GITHUB_EVENT_NAME }}
             **Actor**<br>{{ GITHUB_ACTOR }}
             # dùng steps qua engine của mình (cần STEPS_JSON ở env, xem bên dưới)
@@ -176,6 +176,7 @@ jobs:
           JOB_JSON:    ${{ toJson(job) }}
           STEPS_JSON:  ${{ toJson(steps) }}
           ENVS_JSON:  ${{ toJson(env) }}
+
 
 
 
