@@ -35,6 +35,7 @@ jobs:
                 (envs.RELEASE_TAG || '').trim()
                 || (envs.GITHUB_REF_TYPE === 'tag' ? (envs.GITHUB_REF_NAME || '').trim() : '')
                 || (context.ref?.startsWith('refs/tags/') ? context.ref.slice('refs/tags/'.length) : '');
+              console.log("tag", tag);
               if (tag) {
                   setEnv('RELEASE_TAG', tag);
                   setEnv('RELEASE_URL', `${envs.GITHUB_SERVER_URL || 'https://github.com'}/${envs.GITHUB_REPOSITORY}/releases/tag/${tag}`);
