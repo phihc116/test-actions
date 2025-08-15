@@ -1,0 +1,55 @@
+name: "Notify Lark with Release Info"
+description: "Detect RELEASE_TAG and send notification to Lark"
+
+inputs:
+  tag:
+    description: "Release tag name (optional)"
+    required: false
+  lark_webhook:
+    description: "Lark webhook URL"
+    required: true
+  github_token:
+    description: "GitHub token"
+    required: true
+  msg_color:
+    description: "Message color"
+    required: false
+  build_status:
+    description: "Build status text"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect release tag
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ inputs.github_token }}
+        script: |
+          const { context } = githubSdk;
+          const tag =
+            (envs.RELEASE_TAG || '').trim()
+            || (envs.GITHUB_REF_TYPE === 'tag' ? (envs.GITHUB_REF_NAME || '').trim() : '')
+            || (context.ref?.startsWith('refs/tags/') ? context.ref.slice('refs/tags/'.length) : '');
+          if (tag) {
+              setEnv('RELEASE_TAG', tag);
+              setEnv('RELEASE_URL', `${envs.GITHUB_SERVER_URL || 'https://github.com'}/${envs.GITHUB_REPOSITORY}/releases/tag/${tag}`);
+          }
+
+    - name: Notify Lark
+      uses: phuoc-le/action-lark-notify@main
+      with:
+        columnsPerRow: 2
+        token: ${{ inputs.github_token }}
+        cardItems: |
+          **Repo**<br>[{{GITHUB_REPOSITORY}}]({{GITHUB_SERVER_URL}}/{{GITHUB_REPOSITORY}})
+          **Event**<br>{{GITHUB_EVENT_NAME}}
+          **Actor**<br>{{GITHUB_ACTOR}} 
+          **Ref**<br>[{{GITHUB_REF}}]({{GITHUB_SERVER_URL || 'https://github.com'}}/{{GITHUB_REPOSITORY}}/tree/{{GITHUB_REF_NAME}})
+          **Build logs**<br>[{{GITHUB_RUN_ID}}]({{GITHUB_JOB_URL}})
+          **Release**<br>[{{RELEASE_TAG}}]({{RELEASE_URL}})
+      env:
+        LARK_WEBHOOK: ${{ inputs.lark_webhook }}
+        LARK_MESSAGE_TITLE: "Build Browser For MacOS Dev"
+        LARK_MESSAGE_SUBTITLE: "Status: ${{ inputs.build_status }}"
+        LARK_MESSAGE_TEMPLATE: "${{ inputs.msg_color }}"
