@@ -158,7 +158,7 @@ jobs:
             **Ref**<br>[{{ GITHUB_REF }}]({{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }}/tree/{{ GITHUB_REF_NAME }})
             **Tag**<br>${{ github.event.inputs.tag }}
             **Release**<br>{{ RELEASE_URL }}
-      	  **TEST nà**<br> {{ envs.GITHUB_REPOSITORY}}
+      	    **TEST nà**<br> {{ envs.GITHUB_REPOSITORY }}
         env:
           # webhook theo cách bạn đang dùng
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
@@ -174,5 +174,6 @@ jobs:
           JOB_JSON:    ${{ toJson(job) }}
           STEPS_JSON:  ${{ toJson(steps) }}
       	ENVS_JSON:  ${{ toJson(envs) }}
+
 
 
