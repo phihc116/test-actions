@@ -25,12 +25,11 @@ runs:
       uses: actions/github-script@v7
       with:
         github-token: ${{ inputs.github_token }}
-        script: |
-          const { context } = githubSdk;
+        script: | 
           const tag =
             (envs.RELEASE_TAG || '').trim()
             || (envs.GITHUB_REF_TYPE === 'tag' ? (envs.GITHUB_REF_NAME || '').trim() : '')
-            || (context.ref?.startsWith('refs/tags/') ? context.ref.slice('refs/tags/'.length) : '');
+            || (githubSdk.ref?.startsWith('refs/tags/') ? githubSdk.ref.slice('refs/tags/'.length) : '');
           if (tag) {
               setEnv('RELEASE_TAG', tag);
               setEnv('RELEASE_URL', `${envs.GITHUB_SERVER_URL || 'https://github.com'}/${envs.GITHUB_REPOSITORY}/releases/tag/${tag}`);
