@@ -179,6 +179,8 @@ jobs:
           JOB_JSON:    ${{ toJson(job) }}
           STEPS_JSON:  ${{ toJson(steps) }}
           ENVS_JSON:  ${{ toJson(env) }}
+          RELEASE_TAG: v1.2.3
+
 
 
 
