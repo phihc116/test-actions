@@ -1,0 +1,73 @@
+name: "Auto ACR build push"
+run-name: "Build tag [${{ github.event.inputs.tag }}]"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name to build and release (e.g., v1.0.0)"
+        required: true
+
+permissions:
+  contents: write
+  actions: read  # cần để gọi API lấy danh sách jobs/steps
+
+jobs:
+  create_release:
+    name: Create tag & GitHub Release
+    runs-on: ubuntu-latest
+    outputs:
+      release_url: ${{ steps.gh_release.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      # Notify cuối cùng (dù pass/fail đều gửi)
+      - name: Notify to Lark (per sub-job)
+        if: always()
+        uses: phuoc-le/action-lark-notify@test-v2
+        with:
+          columnsPerRow: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # chạy JS trước khi render để set env động
+          scriptInline: |
+             const { context } = githubSdk;
+              const tag =
+                (envs.RELEASE_TAG || '').trim()
+                || (envs.GITHUB_REF_TYPE === 'tag' ? (envs.GITHUB_REF_NAME || '').trim() : '')
+                || (context.ref?.startsWith('refs/tags/') ? context.ref.slice('refs/tags/'.length) : '');
+              if (tag) {
+                  setEnv('RELEASE_TAG', tag);
+                  setEnv('RELEASE_URL', `${envs.GITHUB_SERVER_URL || 'https://github.com'}/${envs.GITHUB_REPOSITORY}/releases/tag/${tag}`);
+              } 
+          cardItems: |
+            **Worker/Sub**<br>{{ matrix.worker }} / sub-{{ matrix.sub }}
+            **Status**<br>{{ job.status }}
+            **Repo**<br>[{{ TESTNE || GITHUB_REPOSITORY }}]({{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }})
+            **Event**<br>{{ GITHUB_EVENT_NAME }}
+            **Actor**<br>{{ GITHUB_ACTOR }}
+            # dùng steps qua engine của mình (cần STEPS_JSON ở env, xem bên dưới)
+            **Run Logs**<br>[Open logs]({{ steps.job_url.outputs.job_log_url || envs.RUN_LOG_URL }})
+            **Ref**<br>[{{ GITHUB_REF }}]({{ GITHUB_SERVER_URL }}/{{ GITHUB_REPOSITORY }}/tree/{{ GITHUB_REF_NAME }})
+            **Tag**<br>${{ github.event.inputs.tag }}
+            **Release**<br>{{ envs.GITHUB_REPOSITORY }} {{RELEASE_URL}}
+            **GITHUB_REPOSITORY**<br>{{ envs.GITHUB_REPOSITORY }} 
+        env:
+          # webhook theo cách bạn đang dùng
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          # Bạn vẫn có thể set title/subtitle tĩnh ở đây (scriptInline có thể override)
+          LARK_MESSAGE_TITLE: "Worker ${{ matrix.worker }} / sub-${{ matrix.sub }} finished"
+          LARK_MESSAGE_SUBTITLE: |
+            Status: ${{ job.status }}
+      
+          # TRUYỀN ĐỦ CONTEXT DƯỚI DẠNG JSON CHO ENGINE:
+          VARS_JSON:   ${{ toJson(vars) }}
+          GITHUB_JSON: ${{ toJson(github) }}
+          MATRIX_JSON: ${{ toJson(matrix) }}
+          JOB_JSON:    ${{ toJson(job) }}
+          STEPS_JSON:  ${{ toJson(steps) }}
+          ENVS_JSON:  ${{ toJson(env) }}
+
